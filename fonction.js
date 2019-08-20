@@ -17,12 +17,12 @@ function getadd(attribute, callback){
 	var amount = GET('http://localhost:9090/addpatient/?testParam=' + attribute, callback)
 }
 
-function getquery(attribute){
+function getquery(attribute, callback){
 	var amount = GET('http://localhost:9090/query/?testParam=' + attribute, callback)
 }
 
-function getinvoke(attribute){
-	var amount = callAPI('http://localhost:9090/invoke/?testParam=' + attribute, getFee)
+function getinvoke(attribute, callback){
+	var amount = GET('http://localhost:9090/invoke/?testParam=' + attribute, callback)
 }
 
 function POST(auth, params, url, callback) {
@@ -78,18 +78,12 @@ function addPatient() {
     
     //crypter le dossier
     var encryptedData = encrypt(Patient, publicKey);
-    encryptedData = encryptedData.toString();
 
+    let args = [];
+        args[0] = publicKey;
+        args[1] = encryptedData;
 
-    let params = {
-        // channel : "default",
-        // chaincode : "oraclemed",
-        // method : "addPatient",
-        args : [publicKey, encryptedData],
-        //chaincodeVer : "v45"
-    }
-
-    const buffer = JSON.stringify(params);
+    const buffer = JSON.stringify(args);
 
     getadd(buffer, function(res) {
          if(res.status == 200){              
@@ -115,29 +109,25 @@ function addPatient() {
     
 
 function query() {
+    
+    publicKey = document.getElementById("public").value;
+    privateKey = document.getElementById("private").value;
 
-    let key = {};
+    let args = [];
+        args[0] = publicKey;
+        args[1] = privateKey;
 
-    key.publicKey = document.getElementById("public").value;
-    key.privateKey = document.getElementById("private").value;
+    const buffer = JSON.stringify(args);
 
-    let params = {
-        channel : "default",
-        chaincode : "oraclemed",
-        method : "query",
-        args : [key.publicKey],
-        chaincodeVer : "v45"
-    }
-    const buffer = JSON.stringify(params);
-    var response = getquery(buffer);
-    if (response.success == true) { 
-        let dossier = JSON.parse(response.dossier);
-        dossier = dossier.result.payload;
-        var patient = decrypt (dossier, key.privateKey); 
-        alert(patient);
-        document.getElementById("output").innerHTML = patient;
-        }
+    getquery(buffer, function(res) {
 
+        if (res.status == 200) { 
+
+            let dossier = JSON.parse(res.responseText);
+            let patient = decrypt(dossier, privateKey);
+            document.getElementById("output").innerHTML = patient;
+            }
+    });
     }
 
 function invoke(){
@@ -148,44 +138,40 @@ function invoke(){
     
     let Patient = {};
 
-    let params = {
-        channel : "default",
-        chaincode : "oraclemed",
-        method : "query",
-        args : [publicKey],
-        chaincodeVer : "v45"
-    }
-    const buffer = JSON.stringify(params);
+    let args = [publicKey];
+
+    const buffer = JSON.stringify(args);
     
-    let response = getquery(buffer);
-    if( response.success ==  true) {
-        let dossier = JSON.parse(response.dossier);
-        dossier = dossier.result.payload;
-        Patient = decrypt (dossier, privateKey);
-        Patient = JSON.parse(Patient);
+    getquery(buffer, function(res) {
 
-        Patient.dossier = dossierModif;
+        if( res.status ==  200) {
+            let dossier = JSON.parse(res.responseText);
+            Patient = decrypt (dossier, privateKey);
+            Patient = JSON.parse(Patient);
 
-        Patient = JSON.stringify(Patient);
+            Patient.dossier = dossierModif;
 
-        var encryptedData = encrypt(Patient, publicKey)
+            Patient = JSON.stringify(Patient);
 
-        let params = {
-            channel : "default",
-            chaincode : "oraclemed",
-            method : "invoke",
-            args : [publicKey, encryptedData],
-            chaincodeVer : "v45"
-        }
+            var encryptedData = encrypt(Patient, publicKey);
 
-        const buffer = JSON.stringify(params);
-        let response = getinvoke(buffer)
-                if(response.success == true){
-                    alert(response.success);
+            let args = [];
+                args[0] = publicKey;
+                args[1] = encryptedData;
+
+            const buffer = JSON.stringify(args);
+            
+            getinvoke(buffer, function(res) {
+                    if(res.status == 200){
+                        alert("success");
                 }
+            });
            
         }
+    });
     }
+
+
 
 function generateKeypair () {
     crypt = new JSEncrypt({default_key_size: 1024})
