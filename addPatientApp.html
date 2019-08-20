@@ -1,0 +1,21 @@
+<html>   
+   <head>
+      <script src="fonction.js"></script> 
+      <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script> 
+      <script src="https://cdn.rawgit.com/CryptoStore/crypto-js/3.1.2/build/rollups/aes.js"></script>
+      <script src="jsencrypt-master/bin/jsencrypt.min.js"></script> 
+      <link rel="stylesheet" type="text/css">
+   </head>
+   <body>
+   <div style = "margin-top:20%; margin-left:5%; margin-right:5%; text-align: center">
+      <h2> Ajouter un patient </h2>	 			
+      <form>
+        Nom: <input id="nom" name="Nom"><br>
+        Prenom: <input id="prenom" name="Prenom"><br>
+        Numero Assurance: <input id="numeroAssurance" name="numeroAssurance"><br>
+        Numero Institution: <input id="Institution" name="Institution"><br>
+        <button id="ajouter" onClick="addPatient()" type="button" >Ajouter</button>
+      </form>  
+   </div>
+   </body>
+</html>
